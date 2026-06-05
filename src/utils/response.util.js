@@ -1,14 +1,16 @@
-const success = (data) => ({
+const success = (data, traceId) => ({
   success: true,
-  data
+  data,
+  ...(traceId && { traceId })
 });
 
-const error = (code, message) => ({
+const error = (code, message, traceId) => ({
   success: false,
   error: {
     code,
     message
-  }
+  },
+  ...(traceId && { traceId })
 });
 
 module.exports = { success, error };

@@ -5,7 +5,7 @@ const { validate } = require('../middlewares/validation.middleware');
 
 const router = express.Router();
 
-router.use(auth); // Protect all action item routes
+router.use(auth); 
 
 router.post('/', validate({ task: 'string', dueDate: 'string' }), ActionItemController.create);
 router.get('/', ActionItemController.list);

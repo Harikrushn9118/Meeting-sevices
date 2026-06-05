@@ -6,7 +6,7 @@ class ActionItemController {
     try {
       const { task, assignee, meetingId, dueDate } = req.body;
       const result = await ActionItemService.createActionItem(task, assignee, meetingId, dueDate);
-      res.json(success(result));
+      res.json(success(result, res.locals.traceId));
     } catch (err) {
       next(err);
     }
@@ -19,11 +19,11 @@ class ActionItemController {
       
       const validStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED'];
       if (!validStatuses.includes(status)) {
-        return res.status(400).json(error('VALIDATION_ERROR', 'Invalid status value'));
+        return res.status(400).json(error('VALIDATION_ERROR', 'Invalid status value', res.locals.traceId));
       }
 
       await ActionItemService.updateActionItemStatus(id, status);
-      res.json(success({ id, status }));
+      res.json(success({ id, status }, res.locals.traceId));
     } catch (err) {
       next(err);
     }
@@ -33,7 +33,7 @@ class ActionItemController {
     try {
       const { status, assignee, meetingId } = req.query;
       const items = await ActionItemService.getActionItems({ status, assignee, meetingId });
-      res.json(success(items));
+      res.json(success(items, res.locals.traceId));
     } catch (err) {
       next(err);
     }
@@ -42,7 +42,7 @@ class ActionItemController {
   static async getOverdue(req, res, next) {
     try {
       const items = await ActionItemService.getOverdueActionItems();
-      res.json(success(items));
+      res.json(success(items, res.locals.traceId));
     } catch (err) {
       next(err);
     }

@@ -7,8 +7,11 @@ class MeetingService {
   }
 
   static async getMeetings(page = 1, limit = 10) {
-    const offset = (page - 1) * limit;
-    return await MeetingModel.findAll(limit, offset);
+    const { total, data } = await MeetingModel.find(page, limit);
+    return {
+      data,
+      meta: { total, page, limit }
+    };
   }
 
   static async getMeetingById(id) {

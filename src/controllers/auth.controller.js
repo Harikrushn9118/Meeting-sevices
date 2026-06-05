@@ -6,10 +6,10 @@ class AuthController {
     try {
       const { username, password } = req.body;
       const user = await AuthService.register(username, password);
-      res.json(success({ message: 'User registered successfully', user }));
+      res.json(success({ message: 'User registered successfully', user }, res.locals.traceId));
     } catch (err) {
       if (err.message.includes('UNIQUE constraint')) {
-        return res.status(400).json(error('DB_ERROR', 'Username already exists'));
+        return res.status(400).json(error('DB_ERROR', 'Username already exists', res.locals.traceId));
       }
       next(err);
     }
@@ -18,14 +18,12 @@ class AuthController {
   static async login(req, res, next) {
     try {
       const { username, password } = req.body;
-      const token = await AuthService.login(username, password);
-      
-      if (!token) {
-        return res.status(401).json(error('AUTH_ERROR', 'Invalid credentials'));
-      }
-      
-      res.json(success({ token }));
+      const result = await AuthService.login(username, password);
+      res.json(success(result, res.locals.traceId));
     } catch (err) {
+      if (err.message === 'Invalid credentials') {
+        return res.status(401).json(error('AUTH_ERROR', 'Invalid credentials', res.locals.traceId));
+      }
       next(err);
     }
   }

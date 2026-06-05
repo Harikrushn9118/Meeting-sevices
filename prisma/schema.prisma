@@ -16,24 +16,24 @@ model User {
 model Meeting {
   id           Int      @id @default(autoincrement())
   title        String
-  participants String   // JSON stringified array
+  participants String // JSON stringified array
   meetingDate  DateTime
-  transcript   String   // JSON stringified array
-  
-  analysis     MeetingAnalysis?
-  actionItems  ActionItem[]
+  transcript   String // JSON stringified array
+
+  analysis    MeetingAnalysis?
+  actionItems ActionItem[]
 }
 
 model MeetingAnalysis {
   id                  Int      @id @default(autoincrement())
   meetingId           Int      @unique
-  summary             String   // JSON string
-  actionItems         String   // JSON string
-  decisions           String   // JSON string
-  followUpSuggestions String   // JSON string
+  summary             String // JSON string
+  actionItems         String // JSON string
+  decisions           String // JSON string
+  followUpSuggestions String // JSON string
   analyzedAt          DateTime @default(now())
 
-  meeting             Meeting  @relation(fields: [meetingId], references: [id])
+  meeting Meeting @relation(fields: [meetingId], references: [id])
 }
 
 model ActionItem {
@@ -43,6 +43,15 @@ model ActionItem {
   status    String   @default("PENDING")
   dueDate   DateTime
   meetingId Int
-  
-  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+
+  meeting           Meeting           @relation(fields: [meetingId], references: [id])
+  reminderHistories ReminderHistory[]
+}
+
+model ReminderHistory {
+  id           Int      @id @default(autoincrement())
+  actionItemId Int
+  sentAt       DateTime @default(now())
+
+  actionItem ActionItem @relation(fields: [actionItemId], references: [id])
 }

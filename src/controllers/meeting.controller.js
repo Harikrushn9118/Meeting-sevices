@@ -7,7 +7,7 @@ class MeetingController {
     try {
       const { title, participants, meetingDate, transcript } = req.body;
       const result = await MeetingService.createMeeting(title, participants, meetingDate, transcript);
-      res.json(success(result));
+      res.json(success(result, res.locals.traceId));
     } catch (err) {
       next(err);
     }
@@ -18,7 +18,7 @@ class MeetingController {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const meetings = await MeetingService.getMeetings(page, limit);
-      res.json(success(meetings));
+      res.json(success(meetings, res.locals.traceId));
     } catch (err) {
       next(err);
     }
@@ -28,9 +28,9 @@ class MeetingController {
     try {
       const meeting = await MeetingService.getMeetingById(req.params.id);
       if (!meeting) {
-        return res.status(404).json(error('NOT_FOUND', 'Meeting not found'));
+        return res.status(404).json(error('NOT_FOUND', 'Meeting not found', res.locals.traceId));
       }
-      res.json(success(meeting));
+      res.json(success(meeting, res.locals.traceId));
     } catch (err) {
       next(err);
     }
@@ -40,14 +40,30 @@ class MeetingController {
     try {
       const meeting = await MeetingService.getMeetingById(req.params.id);
       if (!meeting) {
-        return res.status(404).json(error('NOT_FOUND', 'Meeting not found'));
+        return res.status(404).json(error('NOT_FOUND', 'Meeting not found', res.locals.traceId));
       }
 
       const analysis = await AIService.analyzeTranscript(meeting.transcript);
 
       await MeetingService.saveAnalysis(meeting.id, analysis);
 
-      res.json(success(analysis));
+      if (analysis.actionItems && Array.isArray(analysis.actionItems)) {
+        const ActionItemModel = require('../models/actionItem.model');
+        for (const ai of analysis.actionItems) {
+          try {
+            await ActionItemModel.create(
+              ai.task || 'Unknown Task',
+              ai.assignee || 'Unassigned',
+              meeting.id,
+              ai.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            );
+          } catch (e) {
+            console.error('Failed to auto-save action item:', e.message);
+          }
+        }
+      }
+
+      res.json(success(analysis, res.locals.traceId));
     } catch (err) {
       next(err);
     }
@@ -57,9 +73,9 @@ class MeetingController {
     try {
       const analysis = await MeetingService.getAnalysis(req.params.id);
       if (!analysis) {
-        return res.status(404).json(error('NOT_FOUND', 'No analysis found for this meeting. Run POST /api/meetings/:id/analyze first.'));
+        return res.status(404).json(error('NOT_FOUND', 'No analysis found for this meeting. Run POST /api/meetings/:id/analyze first.', res.locals.traceId));
       }
-      res.json(success(analysis));
+      res.json(success(analysis, res.locals.traceId));
     } catch (err) {
       next(err);
     }

@@ -2,6 +2,10 @@ const { prisma } = require('../config/db.config');
 
 class ActionItemModel {
   static async create(task, assignee, meetingId, dueDate) {
+    if (!dueDate || isNaN(Date.parse(dueDate))) {
+      throw new Error('Invalid dueDate provided');
+    }
+    
     const actionItem = await prisma.actionItem.create({
       data: {
         task,

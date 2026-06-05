@@ -4,7 +4,6 @@ class MeetingModel {
   static async create(title, participants, meetingDate, transcriptJsonStr) {
     const participantsStr = JSON.stringify(participants || []);
     
-    // meetingDate comes in as string or date, convert to Date object
     const dateObj = new Date(meetingDate);
 
     const meeting = await prisma.meeting.create({
@@ -24,16 +23,19 @@ class MeetingModel {
     };
   }
 
-  static async findAll(limit, offset) {
-    return await prisma.meeting.findMany({
-      take: limit,
-      skip: offset,
-      select: {
-        id: true,
-        title: true,
-        meetingDate: true
-      }
-    });
+  static async find(page, limit) {
+    const offset = (page - 1) * limit;
+    
+    const [total, data] = await prisma.$transaction([
+      prisma.meeting.count(),
+      prisma.meeting.findMany({
+        skip: offset,
+        take: limit,
+        orderBy: { meetingDate: 'desc' }
+      })
+    ]);
+
+    return { total, data };
   }
 
   static async findById(id) {

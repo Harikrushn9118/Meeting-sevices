@@ -5,21 +5,31 @@ const Logger = require('../utils/logger.util');
 
 class CronService {
   static init() {
-    cron.schedule('* * * * *', async () => {
+    cron.schedule('0 * * * *', async () => {
       try {
+        const { prisma } = require('../config/db.config');
         const overdueItems = await ActionItemService.getOverdueActionItems();
         
         for (let item of overdueItems) {
-          if (env.webhookUrl) {
-            await fetch(env.webhookUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text: `Reminder: ${item.task}\nAssigned To: ${item.assignee}\nDue Date: ${item.dueDate}`
-              })
+          const alreadySent = await prisma.reminderHistory.findFirst({
+            where: { actionItemId: item.id }
+          });
+
+          if (!alreadySent) {
+            if (env.webhookUrl) {
+              await fetch(env.webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  text: `Reminder: ${item.task}\nAssigned To: ${item.assignee}\nDue Date: ${item.dueDate}`
+                })
+              });
+            }
+            await prisma.reminderHistory.create({
+              data: { actionItemId: item.id }
             });
+            Logger.info(`Reminder checked/sent for item ${item.id}`);
           }
-          Logger.info(`Reminder checked/sent for item ${item.id}`);
         }
       } catch (err) {
         Logger.error('Cron job error:', err);
