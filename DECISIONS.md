@@ -1,10 +1,10 @@
 # Technical Decisions
 
 ## Database Choice
-**Choice:** SQLite  
-**Why:** Zero-configuration, file-based database that requires no external server setup. Ideal for demonstrating relational data modeling without deployment complexity.  
-**Alternatives considered:** PostgreSQL (better for production concurrency), MongoDB (document-based).  
-**Trade-offs:** SQLite locks the entire database on write operations, which limits concurrent access. For this assignment scope, this trade-off is acceptable.
+**Choice:** SQLite with Prisma ORM  
+**Why:** Zero-configuration, file-based database for simple local development, heavily fortified with Prisma ORM for type safety, schema migrations, and enterprise-grade codebase organization. Using an ORM isolates the business logic from raw SQL queries, making it simple to switch to PostgreSQL in production.  
+**Alternatives considered:** Raw `sqlite3` driver, MongoDB.  
+**Trade-offs:** Prisma adds an extra abstraction layer and generates a client folder, but significantly improves developer experience and database safety.
 
 ## Authentication Strategy
 **Choice:** JWT (JSON Web Tokens)  

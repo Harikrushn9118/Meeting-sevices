@@ -1,45 +1,70 @@
-const { getDb } = require('../config/db.config');
+const { prisma } = require('../config/db.config');
 
 class MeetingModel {
   static async create(title, participants, meetingDate, transcriptJsonStr) {
-    const db = await getDb();
     const participantsStr = JSON.stringify(participants || []);
-    const result = await db.run(
-      'INSERT INTO meetings (title, participants, meetingDate, transcript) VALUES (?, ?, ?, ?)',
-      [title, participantsStr, meetingDate, transcriptJsonStr]
-    );
-    return { id: result.lastID, title, participants: participants || [], meetingDate };
+    
+    // meetingDate comes in as string or date, convert to Date object
+    const dateObj = new Date(meetingDate);
+
+    const meeting = await prisma.meeting.create({
+      data: {
+        title,
+        participants: participantsStr,
+        meetingDate: dateObj,
+        transcript: transcriptJsonStr
+      }
+    });
+
+    return {
+      id: meeting.id,
+      title: meeting.title,
+      participants: JSON.parse(meeting.participants),
+      meetingDate: meeting.meetingDate
+    };
   }
 
   static async findAll(limit, offset) {
-    const db = await getDb();
-    return await db.all('SELECT id, title, meetingDate FROM meetings LIMIT ? OFFSET ?', [limit, offset]);
+    return await prisma.meeting.findMany({
+      take: limit,
+      skip: offset,
+      select: {
+        id: true,
+        title: true,
+        meetingDate: true
+      }
+    });
   }
 
   static async findById(id) {
-    const db = await getDb();
-    return await db.get('SELECT * FROM meetings WHERE id = ?', [id]);
+    return await prisma.meeting.findUnique({
+      where: { id: parseInt(id) }
+    });
   }
 
   static async saveAnalysis(meetingId, analysis) {
-    const db = await getDb();
-    await db.run(
-      `INSERT OR REPLACE INTO meeting_analysis (meetingId, summary, actionItems, decisions, followUpSuggestions, analyzedAt) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        meetingId,
-        JSON.stringify(analysis.summary),
-        JSON.stringify(analysis.actionItems),
-        JSON.stringify(analysis.decisions),
-        JSON.stringify(analysis.followUpSuggestions),
-        new Date().toISOString()
-      ]
-    );
+    const data = {
+      summary: JSON.stringify(analysis.summary),
+      actionItems: JSON.stringify(analysis.actionItems),
+      decisions: JSON.stringify(analysis.decisions),
+      followUpSuggestions: JSON.stringify(analysis.followUpSuggestions),
+      analyzedAt: new Date()
+    };
+
+    await prisma.meetingAnalysis.upsert({
+      where: { meetingId: parseInt(meetingId) },
+      update: data,
+      create: {
+        meetingId: parseInt(meetingId),
+        ...data
+      }
+    });
   }
 
   static async getAnalysis(meetingId) {
-    const db = await getDb();
-    return await db.get('SELECT * FROM meeting_analysis WHERE meetingId = ?', [meetingId]);
+    return await prisma.meetingAnalysis.findUnique({
+      where: { meetingId: parseInt(meetingId) }
+    });
   }
 }
 

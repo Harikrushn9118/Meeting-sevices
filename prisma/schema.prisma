@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model Meeting {
+  id           Int      @id @default(autoincrement())
+  title        String
+  participants String   // JSON stringified array
+  meetingDate  DateTime
+  transcript   String   // JSON stringified array
+  
+  analysis     MeetingAnalysis?
+  actionItems  ActionItem[]
+}
+
+model MeetingAnalysis {
+  id                  Int      @id @default(autoincrement())
+  meetingId           Int      @unique
+  summary             String   // JSON string
+  actionItems         String   // JSON string
+  decisions           String   // JSON string
+  followUpSuggestions String   // JSON string
+  analyzedAt          DateTime @default(now())
+
+  meeting             Meeting  @relation(fields: [meetingId], references: [id])
+}
+
+model ActionItem {
+  id        Int      @id @default(autoincrement())
+  task      String
+  assignee  String
+  status    String   @default("PENDING")
+  dueDate   DateTime
+  meetingId Int
+  
+  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+}

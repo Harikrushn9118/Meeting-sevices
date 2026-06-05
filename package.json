@@ -21,15 +21,17 @@
   "homepage": "https://github.com/Harikrushn9118/Meeting-sevices#readme",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^5.22.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "node-cron": "^4.2.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^6.0.1",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^14.0.0",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
   }
 }

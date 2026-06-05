@@ -1,34 +1,43 @@
-const { getDb } = require('../config/db.config');
+const { prisma } = require('../config/db.config');
 
 class ActionItemModel {
   static async create(task, assignee, meetingId, dueDate) {
-    const db = await getDb();
-    const result = await db.run(
-      'INSERT INTO action_items (task, assignee, meetingId, dueDate) VALUES (?, ?, ?, ?)',
-      [task, assignee, meetingId, dueDate]
-    );
-    return { id: result.lastID, task, status: 'PENDING' };
+    const actionItem = await prisma.actionItem.create({
+      data: {
+        task,
+        assignee,
+        meetingId: parseInt(meetingId),
+        dueDate: new Date(dueDate)
+      }
+    });
+    return { id: actionItem.id, task: actionItem.task, status: actionItem.status };
   }
 
   static async updateStatus(id, status) {
-    const db = await getDb();
-    await db.run('UPDATE action_items SET status = ? WHERE id = ?', [status, id]);
+    await prisma.actionItem.update({
+      where: { id: parseInt(id) },
+      data: { status }
+    });
   }
 
   static async find(filters) {
-    const db = await getDb();
-    let query = 'SELECT * FROM action_items WHERE 1=1';
-    const params = [];
-    if (filters.status) { query += ' AND status = ?'; params.push(filters.status); }
-    if (filters.assignee) { query += ' AND assignee = ?'; params.push(filters.assignee); }
-    if (filters.meetingId) { query += ' AND meetingId = ?'; params.push(filters.meetingId); }
-    
-    return await db.all(query, params);
+    const where = {};
+    if (filters.status) where.status = filters.status;
+    if (filters.assignee) where.assignee = filters.assignee;
+    if (filters.meetingId) where.meetingId = parseInt(filters.meetingId);
+
+    return await prisma.actionItem.findMany({
+      where
+    });
   }
 
   static async findOverdue(currentDateStr) {
-    const db = await getDb();
-    return await db.all('SELECT * FROM action_items WHERE status != "COMPLETED" AND dueDate < ?', [currentDateStr]);
+    return await prisma.actionItem.findMany({
+      where: {
+        status: { not: 'COMPLETED' },
+        dueDate: { lt: new Date(currentDateStr) }
+      }
+    });
   }
 }
 
