@@ -1,0 +1,261 @@
+openapi: 3.0.0
+info:
+  title: Meeting Intelligence API
+  description: API for managing meetings, extracting AI insights, and tracking action items.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        traceId:
+          type: string
+          example: "abc12345-uuid"
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Missing required fields"
+        traceId:
+          type: string
+          example: "abc12345-uuid"
+
+paths:
+  /health:
+    get:
+      summary: Server health check
+      responses:
+        '200':
+          description: OK
+  /api/evaluation:
+    get:
+      summary: Evaluation details
+      responses:
+        '200':
+          description: OK
+  /api/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: OK
+  /api/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: OK
+  /api/meetings:
+    post:
+      summary: Create a meeting
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                participants:
+                  type: array
+                  items:
+                    type: string
+                meetingDate:
+                  type: string
+                  format: date-time
+                transcript:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                      speaker:
+                        type: string
+                      text:
+                        type: string
+      responses:
+        '200':
+          description: OK
+    get:
+      summary: List meetings
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/meetings/{id}:
+    get:
+      summary: Get meeting details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/meetings/{id}/analyze:
+    post:
+      summary: Analyze meeting using AI
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/meetings/{id}/analysis:
+    get:
+      summary: Get saved meeting analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/action-items:
+    post:
+      summary: Create action item
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  type: string
+                assignee:
+                  type: string
+                meetingId:
+                  type: integer
+                dueDate:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: OK
+    get:
+      summary: List action items
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: assignee
+          schema:
+            type: string
+        - in: query
+          name: meetingId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/action-items/overdue:
+    get:
+      summary: Get overdue action items
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /api/action-items/{id}/status:
+    patch:
+      summary: Update action item status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [PENDING, IN_PROGRESS, COMPLETED]
+      responses:
+        '200':
+          description: OK
