@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.use(auth);
 
-router.post('/', validate({ title: 'string', transcript: 'object' }), MeetingController.createMeeting);
+router.post('/', validate({ title: 'string', transcript: 'object', meetingDate: 'date', participants: 'array' }), MeetingController.createMeeting);
 router.get('/', MeetingController.listMeetings);
 router.get('/:id', MeetingController.getMeeting);
 router.post('/:id/analyze', MeetingController.analyzeMeeting);

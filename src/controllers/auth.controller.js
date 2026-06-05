@@ -4,8 +4,10 @@ const { success, error } = require('../utils/response.util');
 class AuthController {
   static async register(req, res, next) {
     try {
+      console.log('AuthController.register called with body:', req.body);
       const { username, password } = req.body;
       const user = await AuthService.register(username, password);
+      console.log('AuthController.register user created:', user);
       res.json(success({ message: 'User registered successfully', user }, res.locals.traceId));
     } catch (err) {
       if (err.message.includes('UNIQUE constraint')) {

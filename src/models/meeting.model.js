@@ -1,17 +1,20 @@
 const { prisma } = require('../config/db.config');
+const { v4: uuidv4 } = require('uuid');
 
 class MeetingModel {
-  static async create(title, participants, meetingDate, transcriptJsonStr) {
+  static async create(title, participants, meetingDate, transcriptJsonStr, createdBy) {
     const participantsStr = JSON.stringify(participants || []);
-    
+    const transcriptStr = JSON.stringify(transcriptJsonStr || []);
     const dateObj = new Date(meetingDate);
 
     const meeting = await prisma.meeting.create({
       data: {
+        id: uuidv4(),
         title,
         participants: participantsStr,
         meetingDate: dateObj,
-        transcript: transcriptJsonStr
+        transcript: transcriptStr,
+        createdBy
       }
     });
 
@@ -40,24 +43,25 @@ class MeetingModel {
 
   static async findById(id) {
     return await prisma.meeting.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
   }
 
   static async saveAnalysis(meetingId, analysis) {
     const data = {
-      summary: JSON.stringify(analysis.summary),
-      actionItems: JSON.stringify(analysis.actionItems),
-      decisions: JSON.stringify(analysis.decisions),
-      followUpSuggestions: JSON.stringify(analysis.followUpSuggestions),
+      summary: JSON.stringify(analysis.summary || []),
+      actionItems: JSON.stringify(analysis.actionItems || []),
+      decisions: JSON.stringify(analysis.decisions || []),
+      followUpSuggestions: JSON.stringify(analysis.followUpSuggestions || []),
       analyzedAt: new Date()
     };
 
     await prisma.meetingAnalysis.upsert({
-      where: { meetingId: parseInt(meetingId) },
+      where: { meetingId },
       update: data,
       create: {
-        meetingId: parseInt(meetingId),
+        id: uuidv4(),
+        meetingId,
         ...data
       }
     });
@@ -65,7 +69,7 @@ class MeetingModel {
 
   static async getAnalysis(meetingId) {
     return await prisma.meetingAnalysis.findUnique({
-      where: { meetingId: parseInt(meetingId) }
+      where: { meetingId }
     });
   }
 }

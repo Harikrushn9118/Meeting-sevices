@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -8,50 +9,61 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  username String @unique
-  password String
+  id        String    @id
+  username  String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  meetings  Meeting[]
 }
 
 model Meeting {
-  id           Int      @id @default(autoincrement())
+  id           String   @id
   title        String
-  participants String // JSON stringified array
+  participants String   // Stored as JSON string
   meetingDate  DateTime
-  transcript   String // JSON stringified array
+  transcript   String?  // Optional JSON string
+  createdBy    String
+  user         User     @relation(fields: [createdBy], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   analysis    MeetingAnalysis?
   actionItems ActionItem[]
 }
 
 model MeetingAnalysis {
-  id                  Int      @id @default(autoincrement())
-  meetingId           Int      @unique
-  summary             String // JSON string
-  actionItems         String // JSON string
-  decisions           String // JSON string
-  followUpSuggestions String // JSON string
+  id                  String   @id
+  meetingId           String   @unique
+  summary             String
+  actionItems         String
+  decisions           String
+  followUpSuggestions String
   analyzedAt          DateTime @default(now())
+  createdAt           DateTime @default(now())
 
   meeting Meeting @relation(fields: [meetingId], references: [id])
 }
 
 model ActionItem {
-  id        Int      @id @default(autoincrement())
+  id        String   @id
   task      String
   assignee  String
-  status    String   @default("PENDING")
-  dueDate   DateTime
-  meetingId Int
+  status    String   @default("PENDING") // Enum fallback for SQLite
+  dueDate   DateTime?
+  meetingId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  meeting           Meeting           @relation(fields: [meetingId], references: [id])
-  reminderHistories ReminderHistory[]
+  meeting      Meeting       @relation(fields: [meetingId], references: [id])
+  reminderLogs ReminderLog[]
 }
 
-model ReminderHistory {
-  id           Int      @id @default(autoincrement())
-  actionItemId Int
-  sentAt       DateTime @default(now())
+model ReminderLog {
+  id             String   @id
+  actionItemId   String
+  sentAt         DateTime @default(now())
+  deliveryStatus String   @default("SUCCESS")
+  channel        String   @default("discord")
 
   actionItem ActionItem @relation(fields: [actionItemId], references: [id])
 }

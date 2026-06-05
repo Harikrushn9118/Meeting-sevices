@@ -1,4 +1,5 @@
 const { prisma } = require('../config/db.config');
+const { v4: uuidv4 } = require('uuid');
 
 class ActionItemModel {
   static async create(task, assignee, meetingId, dueDate) {
@@ -8,9 +9,10 @@ class ActionItemModel {
     
     const actionItem = await prisma.actionItem.create({
       data: {
+        id: uuidv4(),
         task,
         assignee,
-        meetingId: parseInt(meetingId),
+        meetingId,
         dueDate: new Date(dueDate)
       }
     });
@@ -19,7 +21,7 @@ class ActionItemModel {
 
   static async updateStatus(id, status) {
     await prisma.actionItem.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: { status }
     });
   }
@@ -28,7 +30,7 @@ class ActionItemModel {
     const where = {};
     if (filters.status) where.status = filters.status;
     if (filters.assignee) where.assignee = filters.assignee;
-    if (filters.meetingId) where.meetingId = parseInt(filters.meetingId);
+    if (filters.meetingId) where.meetingId = filters.meetingId;
 
     return await prisma.actionItem.findMany({
       where

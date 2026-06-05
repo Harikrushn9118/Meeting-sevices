@@ -11,7 +11,7 @@ class CronService {
         const overdueItems = await ActionItemService.getOverdueActionItems();
         
         for (let item of overdueItems) {
-          const alreadySent = await prisma.reminderHistory.findFirst({
+          const alreadySent = await prisma.reminderLog.findFirst({
             where: { actionItemId: item.id }
           });
 
@@ -25,8 +25,9 @@ class CronService {
                 })
               });
             }
-            await prisma.reminderHistory.create({
-              data: { actionItemId: item.id }
+            const { v4: uuidv4 } = require('uuid');
+            await prisma.reminderLog.create({
+              data: { id: uuidv4(), actionItemId: item.id }
             });
             Logger.info(`Reminder checked/sent for item ${item.id}`);
           }

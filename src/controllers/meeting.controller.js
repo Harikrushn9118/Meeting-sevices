@@ -6,7 +6,7 @@ class MeetingController {
   static async createMeeting(req, res, next) {
     try {
       const { title, participants, meetingDate, transcript } = req.body;
-      const result = await MeetingService.createMeeting(title, participants, meetingDate, transcript);
+      const result = await MeetingService.createMeeting(title, participants, meetingDate, transcript, req.user.id);
       res.json(success(result, res.locals.traceId));
     } catch (err) {
       next(err);
