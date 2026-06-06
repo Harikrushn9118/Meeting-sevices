@@ -19,9 +19,9 @@ model User {
 model Meeting {
   id           String   @id
   title        String
-  participants String   // Stored as JSON string
+  participants String   @db.Text // Stored as JSON string
   meetingDate  DateTime
-  transcript   String?  // Optional JSON string
+  transcript   String?  @db.LongText // Optional JSON string
   createdBy    String
   user         User     @relation(fields: [createdBy], references: [id])
   createdAt    DateTime @default(now())
@@ -34,10 +34,10 @@ model Meeting {
 model MeetingAnalysis {
   id                  String   @id
   meetingId           String   @unique
-  summary             String
-  actionItems         String
-  decisions           String
-  followUpSuggestions String
+  summary             String   @db.Text
+  actionItems         String   @db.Text
+  decisions           String   @db.Text
+  followUpSuggestions String   @db.Text
   analyzedAt          DateTime @default(now())
   createdAt           DateTime @default(now())
 
@@ -46,7 +46,7 @@ model MeetingAnalysis {
 
 model ActionItem {
   id        String   @id
-  task      String
+  task      String   @db.Text
   assignee  String
   status    String   @default("PENDING") // Enum fallback for SQLite
   dueDate   DateTime?
