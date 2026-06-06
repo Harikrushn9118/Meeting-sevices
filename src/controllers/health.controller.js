@@ -10,7 +10,7 @@ class HealthController {
       candidateName: "Harikrushn Patel",
       email: "harikrushn@gmail.com",
       repositoryUrl: "https://github.com/Harikrushn9118/Meeting-sevices",
-      deployedUrl: "https://example.com",
+      deployedUrl: "https://meeting-sevices.onrender.com",
       externalIntegration: "Slack Webhook",
       features: [
         "Authentication",
