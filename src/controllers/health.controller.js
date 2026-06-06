@@ -8,7 +8,7 @@ class HealthController {
   static getEvaluation(req, res) {
     res.json(success({
       candidateName: "Harikrushn Patel",
-      email: "harikrushn@gmail.com",
+      email: "patel.brijeshbhai@adypu.edu.in",
       repositoryUrl: "https://github.com/Harikrushn9118/Meeting-sevices",
       deployedUrl: "https://meeting-sevices.onrender.com",
       externalIntegration: "Slack Webhook",
