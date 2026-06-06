@@ -10,7 +10,7 @@ class AuthController {
       console.log('AuthController.register user created:', user);
       res.json(success({ message: 'User registered successfully', user }, res.locals.traceId));
     } catch (err) {
-      if (err.message.includes('UNIQUE constraint')) {
+      if (err.code === 'P2002' || err.message.includes('Unique constraint') || err.message.includes('UNIQUE constraint')) {
         return res.status(400).json(error('DB_ERROR', 'Username already exists', res.locals.traceId));
       }
       next(err);
