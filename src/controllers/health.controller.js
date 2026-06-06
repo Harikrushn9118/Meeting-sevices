@@ -8,7 +8,7 @@ class HealthController {
   static getEvaluation(req, res) {
     res.json(success({
       candidateName: "Harikrushn Patel",
-      email: "harikrushn@example.com",
+      email: "harikrushn@gmail.com",
       repositoryUrl: "https://github.com/Harikrushn9118/Meeting-sevices",
       deployedUrl: "https://example.com",
       externalIntegration: "Slack Webhook",
@@ -22,3 +22,4 @@ class HealthController {
 }
 
 module.exports = HealthController;
+

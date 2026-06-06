@@ -3,6 +3,11 @@ const logger = require('../utils/logger.util');
 
 const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
 });
 
 const connectDB = async () => {
