@@ -227,6 +227,14 @@ paths:
       responses:
         '200':
           description: OK
+  /api/action-items/trigger-reminders:
+    post:
+      summary: Manually trigger Discord reminders (for testing)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
   /api/action-items/overdue:
     get:
       summary: Get overdue action items
