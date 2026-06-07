@@ -47,6 +47,42 @@ class ActionItemController {
       next(err);
     }
   }
+
+  static async triggerReminders(req, res, next) {
+    try {
+      const { prisma } = require('../config/db.config');
+      const env = require('../config/env.config');
+      const { v4: uuidv4 } = require('uuid');
+      
+      const overdueItems = await ActionItemService.getOverdueActionItems();
+      let sentCount = 0;
+      
+      for (let item of overdueItems) {
+        const alreadySent = await prisma.reminderLog.findFirst({
+          where: { actionItemId: item.id }
+        });
+
+        if (!alreadySent) {
+          if (env.webhookUrl) {
+            await fetch(env.webhookUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `Reminder: ${item.task}\nAssigned To: ${item.assignee}\nDue Date: ${item.dueDate}`
+              })
+            });
+          }
+          await prisma.reminderLog.create({
+            data: { id: uuidv4(), actionItemId: item.id }
+          });
+          sentCount++;
+        }
+      }
+      res.json(success({ message: `Successfully triggered and sent ${sentCount} reminders via Discord Webhook.` }, res.locals.traceId));
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = ActionItemController;
