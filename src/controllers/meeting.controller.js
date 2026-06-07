@@ -55,7 +55,7 @@ class MeetingController {
               ai.task || 'Unknown Task',
               ai.assignee || 'Unassigned',
               meeting.id,
-              ai.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+              ai.dueDate || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // Default to yesterday so it triggers Discord immediately
             );
           } catch (e) {
             console.error('Failed to auto-save action item:', e.message);
